@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocabulary Learning For Beginner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Personal vocabulary</p>
+        <h1>Learn English words with simple daily practice.</h1>
+      </div>
+      <div class="stats">
+        <span id="wordCount">0 words</span>
+      </div>
+    </header>
+
+    <section class="topic-panel">
+      <div>
+        <p class="eyebrow">Topics</p>
+        <h2>Choose a study topic</h2>
+      </div>
+      <div id="topicList" class="topic-list"></div>
+    </section>
+
+    <div class="workspace">
+      <div class="study-area">
+        <div class="tabs">
+          <button id="studyTabBtn" class="tab-btn active">Flashcard</button>
+          <button id="practiceTabBtn" class="tab-btn">Train</button>
+        </div>
+
+        <section id="studyView" class="card study-card">
+          <div class="card-top">
+            <p id="topic">Topic: Basic</p>
+            <span>Flashcard</span>
+          </div>
+
+          <div class="flashcard-options">
+            <button id="englishFirstBtn" class="side-btn active">English first</button>
+            <button id="vietnameseFirstBtn" class="side-btn">Vietnamese first</button>
+          </div>
+
+          <div id="flashcardFlip" class="flashcard-flip" role="button" tabindex="0">
+            <div class="flashcard-inner">
+              <div class="flashcard-face flashcard-front">
+                <p id="partOfSpeech" class="part-of-speech">Parts of speech: Not set</p>
+                <h2 id="word">apple</h2>
+              </div>
+
+              <div class="flashcard-face flashcard-back">
+                <h2 id="meaning">qua tao</h2>
+              </div>
+            </div>
+          </div>
+
+          <p id="example" class="flashcard-example">I eat an apple every day.</p>
+
+          <div class="card-actions">
+            <button id="nextBtn">Next word</button>
+            <button id="deleteBtn" class="danger-btn">Delete word</button>
+          </div>
+        </section>
+
+        <section id="practiceView" class="card practice-card hidden">
+          <div class="card-top">
+            <p id="practiceTopic">Topic: Basic</p>
+            <span>Train</span>
+          </div>
+
+          <div class="practice-options">
+            <button id="englishToVietnameseBtn" class="side-btn active">English -> Vietnamese</button>
+            <button id="vietnameseToEnglishBtn" class="side-btn">Vietnamese -> English</button>
+          </div>
+
+          <p id="practiceLabel" class="practice-label">Nhap nghia cua tu nay</p>
+          <h2 id="practiceWord">apple</h2>
+
+          <label id="practiceAnswerLabel" for="practiceAnswer">Cau tra loi</label>
+          <input id="practiceAnswer" type="text" placeholder="Nhap nghia tieng Viet">
+
+          <div class="card-actions">
+            <button id="checkAnswerBtn">Kiem tra</button>
+            <button id="nextPracticeBtn">Tu khac</button>
+          </div>
+
+          <p id="practiceResult" class="practice-result"></p>
+        </section>
+      </div>
+
+      <section class="add-word">
+        <p class="eyebrow">Build your list</p>
+        <h2>Add a new word</h2>
+
+        <label for="newWord">English word</label>
+        <input id="newWord" type="text">
+
+        <label for="newMeaning">Meaning</label>
+        <input id="newMeaning" type="text">
+
+        <label for="newPartOfSpeech">Parts of speech</label>
+        <input id="newPartOfSpeech" type="text">
+
+        <label for="newExample">Example sentence</label>
+        <input id="newExample" type="text">
+
+        <label for="newTopic">Topic</label>
+        <input id="newTopic" type="text">
+
+        <button id="addBtn">Add word</button>
+        <p id="addMessage" class="add-message" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
