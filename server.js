@@ -77,8 +77,8 @@ function safeCompare(value, expectedValue) {
 }
 
 function requireAdmin(req, res, next) {
-  const adminKey = process.env.ADMIN_KEY || "";
-  const submittedKey = req.get("x-admin-key") || req.query.key || "";
+  const adminKey = String(process.env.ADMIN_KEY || "").trim();
+  const submittedKey = String(req.get("x-admin-key") || req.query.key || "").trim();
 
   if (!adminKey) {
     res.status(503).json({ error: "Admin key is not configured" });
