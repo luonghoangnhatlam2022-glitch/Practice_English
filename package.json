@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Vocabulary learning web app",
   "main": "server.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node server.js"
   },
