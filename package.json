@@ -1,0 +1,17 @@
+{
+  "name": "web_english",
+  "version": "1.0.0",
+  "description": "Vocabulary learning web app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sqlite3": "^6.0.1"
+  }
+}
