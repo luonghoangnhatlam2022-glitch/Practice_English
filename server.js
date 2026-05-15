@@ -2,6 +2,7 @@ const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
 const crypto = require("crypto");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -62,6 +63,34 @@ function createUserPayload(user) {
     name: user.name,
     phone: user.phone
   };
+}
+
+function safeCompare(value, expectedValue) {
+  const valueBuffer = Buffer.from(String(value || ""));
+  const expectedBuffer = Buffer.from(String(expectedValue || ""));
+
+  if (valueBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(valueBuffer, expectedBuffer);
+}
+
+function requireAdmin(req, res, next) {
+  const adminKey = process.env.ADMIN_KEY || "";
+  const submittedKey = req.get("x-admin-key") || req.query.key || "";
+
+  if (!adminKey) {
+    res.status(503).json({ error: "Admin key is not configured" });
+    return;
+  }
+
+  if (!safeCompare(submittedKey, adminKey)) {
+    res.status(401).json({ error: "Invalid admin key" });
+    return;
+  }
+
+  next();
 }
 
 function getBearerToken(req) {
@@ -210,6 +239,54 @@ app.post("/api/auth/logout", requireAuth, function (req, res) {
 
   db.run("DELETE FROM sessions WHERE token = ?", [token], function () {
     res.json({ success: true });
+  });
+});
+
+app.get("/admin", function (req, res) {
+  res.sendFile(path.join(__dirname, "admin.html"));
+});
+
+app.get("/api/admin/stats", requireAdmin, function (req, res) {
+  const data = {};
+
+  db.get("SELECT COUNT(*) AS count FROM users", function (userErr, userRow) {
+    if (userErr) {
+      res.status(500).json({ error: "Cannot count users" });
+      return;
+    }
+
+    data.users = userRow.count;
+
+    db.get("SELECT COUNT(*) AS count FROM words", function (wordErr, wordRow) {
+      if (wordErr) {
+        res.status(500).json({ error: "Cannot count words" });
+        return;
+      }
+
+      data.words = wordRow.count;
+
+      db.get("SELECT COUNT(*) AS count FROM sessions", function (sessionErr, sessionRow) {
+        if (sessionErr) {
+          res.status(500).json({ error: "Cannot count sessions" });
+          return;
+        }
+
+        data.sessions = sessionRow.count;
+
+        db.all(
+          "SELECT id, name, phone, created_at FROM users ORDER BY id DESC LIMIT 50",
+          function (usersErr, users) {
+            if (usersErr) {
+              res.status(500).json({ error: "Cannot get users" });
+              return;
+            }
+
+            data.recentUsers = users;
+            res.json(data);
+          }
+        );
+      });
+    });
   });
 });
 

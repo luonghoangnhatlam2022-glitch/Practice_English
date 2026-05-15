@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice English Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="admin-page">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h1>Practice English dashboard</h1>
+      </div>
+      <a class="admin-home-link" href="/">Open app</a>
+    </header>
+
+    <section id="adminGate" class="admin-panel">
+      <label for="adminKey">Admin key</label>
+      <div class="admin-key-row">
+        <input id="adminKey" type="password" autocomplete="current-password">
+        <button id="loadAdminBtn" type="button">View</button>
+      </div>
+      <p id="adminMessage" class="auth-message" aria-live="polite"></p>
+    </section>
+
+    <section id="adminDashboard" class="admin-dashboard hidden">
+      <div class="admin-stats">
+        <article class="admin-stat">
+          <span>Users</span>
+          <strong id="adminUserCount">0</strong>
+        </article>
+        <article class="admin-stat">
+          <span>Words</span>
+          <strong id="adminWordCount">0</strong>
+        </article>
+        <article class="admin-stat">
+          <span>Sessions</span>
+          <strong id="adminSessionCount">0</strong>
+        </article>
+      </div>
+
+      <section class="admin-panel">
+        <div class="admin-table-title">
+          <h2>Recent users</h2>
+          <button id="refreshAdminBtn" type="button">Refresh</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
