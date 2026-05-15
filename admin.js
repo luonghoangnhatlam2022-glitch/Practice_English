@@ -1,4 +1,5 @@
 const adminKeyInput = document.getElementById("adminKey");
+const toggleAdminKeyBtn = document.getElementById("toggleAdminKey");
 const loadAdminBtn = document.getElementById("loadAdminBtn");
 const refreshAdminBtn = document.getElementById("refreshAdminBtn");
 const adminMessage = document.getElementById("adminMessage");
@@ -94,6 +95,12 @@ async function loadAdmin() {
 
 loadAdminBtn.addEventListener("click", loadAdmin);
 refreshAdminBtn.addEventListener("click", loadAdmin);
+
+toggleAdminKeyBtn.addEventListener("click", function () {
+  const isPassword = adminKeyInput.type === "password";
+  adminKeyInput.type = isPassword ? "text" : "password";
+  toggleAdminKeyBtn.textContent = isPassword ? "Hide" : "Show";
+});
 
 adminKeyInput.addEventListener("keydown", function (event) {
   if (event.key === "Enter") {

@@ -19,7 +19,10 @@
     <section id="adminGate" class="admin-panel">
       <label for="adminKey">Admin key</label>
       <div class="admin-key-row">
-        <input id="adminKey" type="password" autocomplete="current-password">
+        <div class="admin-password-field">
+          <input id="adminKey" type="password" autocomplete="current-password">
+          <button id="toggleAdminKey" type="button" class="password-toggle">Show</button>
+        </div>
         <button id="loadAdminBtn" type="button">View</button>
       </div>
       <p id="adminMessage" class="auth-message" aria-live="polite"></p>
