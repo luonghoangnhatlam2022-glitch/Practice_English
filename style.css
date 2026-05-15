@@ -57,6 +57,11 @@ input {
 .auth-panel h1 {
   margin-bottom: 24px;
   font-size: clamp(32px, 7vw, 54px);
+  text-align: center;
+}
+
+.auth-panel .eyebrow {
+  text-align: center;
 }
 
 .auth-tabs {
