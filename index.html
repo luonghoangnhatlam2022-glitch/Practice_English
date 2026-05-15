@@ -7,14 +7,59 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-panel">
+      <p class="eyebrow">Account</p>
+      <h1>Create your vocabulary account.</h1>
+
+      <div class="auth-tabs">
+        <button id="showRegisterBtn" class="auth-tab active">Register</button>
+        <button id="showLoginBtn" class="auth-tab">Log in</button>
+      </div>
+
+      <form id="registerForm" class="auth-form">
+        <label for="registerName">Your name</label>
+        <input id="registerName" type="text" autocomplete="name">
+
+        <label for="registerPhone">Phone number</label>
+        <input id="registerPhone" type="tel" autocomplete="tel" placeholder="Example: 0912345678">
+
+        <label for="registerPassword">Password</label>
+        <div class="password-field">
+          <input id="registerPassword" type="password" autocomplete="new-password">
+          <button id="toggleRegisterPassword" type="button" class="password-toggle" aria-label="Show password">Show</button>
+        </div>
+
+        <button type="submit">Create account</button>
+      </form>
+
+      <form id="loginForm" class="auth-form hidden">
+        <label for="loginPhone">Phone number</label>
+        <input id="loginPhone" type="tel" autocomplete="tel">
+
+        <label for="loginPassword">Password</label>
+        <div class="password-field">
+          <input id="loginPassword" type="password" autocomplete="current-password">
+          <button id="toggleLoginPassword" type="button" class="password-toggle" aria-label="Show password">Show</button>
+        </div>
+
+        <button type="submit">Log in</button>
+      </form>
+
+      <p id="authMessage" class="auth-message" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <main id="appShell" class="app hidden">
     <header class="app-header">
       <div>
         <p class="eyebrow">Personal vocabulary</p>
         <h1>Learn English words with simple daily practice.</h1>
       </div>
       <div class="stats">
+        <span id="accountName">Guest</span>
         <span id="wordCount">0 words</span>
+        <button id="logoutBtn" class="logout-btn">Log out</button>
       </div>
     </header>
 

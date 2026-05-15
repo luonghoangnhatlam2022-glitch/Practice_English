@@ -31,7 +31,26 @@ let flashcardDefaultSide = localStorage.getItem("flashcardDefaultSide") || "engl
 let flashcardSide = flashcardDefaultSide;
 let practiceMode = localStorage.getItem("practiceMode") || "english-to-vietnamese";
 let nextPracticeTimer = null;
+let currentUser = null;
 
+const authTokenKey = "authToken";
+
+const authScreen = document.getElementById("authScreen");
+const appShell = document.getElementById("appShell");
+const showRegisterBtn = document.getElementById("showRegisterBtn");
+const showLoginBtn = document.getElementById("showLoginBtn");
+const registerForm = document.getElementById("registerForm");
+const loginForm = document.getElementById("loginForm");
+const registerNameInput = document.getElementById("registerName");
+const registerPhoneInput = document.getElementById("registerPhone");
+const registerPasswordInput = document.getElementById("registerPassword");
+const toggleRegisterPasswordBtn = document.getElementById("toggleRegisterPassword");
+const loginPhoneInput = document.getElementById("loginPhone");
+const loginPasswordInput = document.getElementById("loginPassword");
+const toggleLoginPasswordBtn = document.getElementById("toggleLoginPassword");
+const authMessageEl = document.getElementById("authMessage");
+const accountNameEl = document.getElementById("accountName");
+const logoutBtn = document.getElementById("logoutBtn");
 const wordEl = document.getElementById("word");
 const meaningEl = document.getElementById("meaning");
 const exampleEl = document.getElementById("example");
@@ -66,6 +85,114 @@ const newExampleInput = document.getElementById("newExample");
 const newTopicInput = document.getElementById("newTopic");
 const addBtn = document.getElementById("addBtn");
 const addMessageEl = document.getElementById("addMessage");
+
+function getAuthToken() {
+  return localStorage.getItem(authTokenKey);
+}
+
+function setAuthToken(token) {
+  localStorage.setItem(authTokenKey, token);
+}
+
+function clearAuthToken() {
+  localStorage.removeItem(authTokenKey);
+}
+
+function showAuthMessage(message, type) {
+  authMessageEl.textContent = message;
+  authMessageEl.className = `auth-message ${type}`;
+}
+
+async function requestJson(url, options) {
+  let response;
+
+  try {
+    response = await fetch(url, options);
+  } catch (err) {
+    throw new Error("Khong ket noi duoc server. Hay mo web bang http://localhost:3000, khong mo truc tiep file index.html.");
+  }
+
+  const data = await response.json().catch(function () {
+    return {};
+  });
+
+  if (!response.ok) {
+    throw new Error(data.error || "Something went wrong");
+  }
+
+  return data;
+}
+
+function setAuthMode(mode) {
+  const isRegister = mode === "register";
+
+  registerForm.classList.toggle("hidden", !isRegister);
+  loginForm.classList.toggle("hidden", isRegister);
+  showRegisterBtn.classList.toggle("active", isRegister);
+  showLoginBtn.classList.toggle("active", !isRegister);
+  showAuthMessage("", "");
+
+  if (isRegister) {
+    registerNameInput.focus();
+    return;
+  }
+
+  loginPhoneInput.focus();
+}
+
+function showApp(user) {
+  currentUser = user;
+  accountNameEl.textContent = user.name;
+  authScreen.classList.add("hidden");
+  appShell.classList.remove("hidden");
+  normalizeVocabularyExamples();
+  renderTopics();
+  updateDefaultSideButtons();
+  updatePracticeModeButtons();
+  showWord();
+}
+
+function showAuthScreen() {
+  currentUser = null;
+  appShell.classList.add("hidden");
+  authScreen.classList.remove("hidden");
+}
+
+function togglePasswordVisibility(input, button) {
+  const shouldShow = input.type === "password";
+
+  input.type = shouldShow ? "text" : "password";
+  button.textContent = shouldShow ? "Hide" : "Show";
+  button.setAttribute("aria-label", shouldShow ? "Hide password" : "Show password");
+  input.focus();
+}
+
+async function finishAuth(data) {
+  setAuthToken(data.token);
+  showApp(data.user);
+}
+
+async function checkExistingLogin() {
+  const token = getAuthToken();
+
+  if (!token) {
+    showAuthScreen();
+    return;
+  }
+
+  try {
+    const data = await requestJson("/api/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    showApp(data.user);
+  } catch (err) {
+    clearAuthToken();
+    showAuthScreen();
+  }
+}
 
 function getFilteredVocabulary() {
   if (selectedTopic === "All") {
@@ -220,6 +347,31 @@ function getPracticeAnswer(word) {
   }
 
   return word.meaning;
+}
+
+function normalizeAnswerText(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getAnswerMistake(userAnswer, correctAnswer) {
+  const userText = normalizeAnswerText(userAnswer);
+  const correctText = normalizeAnswerText(correctAnswer);
+  const maxLength = Math.max(userText.length, correctText.length);
+
+  for (let index = 0; index < maxLength; index++) {
+    if (userText[index] !== correctText[index]) {
+      const typedChar = userText[index] || "thieu ky tu";
+      const expectedChar = correctText[index] || "du ky tu";
+
+      return {
+        position: index + 1,
+        typedChar: typedChar,
+        expectedChar: expectedChar
+      };
+    }
+  }
+
+  return null;
 }
 
 function updatePracticeCopy() {
@@ -427,9 +579,10 @@ checkAnswerBtn.addEventListener("click", function () {
     return;
   }
 
-  const userAnswer = practiceAnswerInput.value.trim().toLowerCase();
+  const userAnswerText = practiceAnswerInput.value.trim();
+  const userAnswer = normalizeAnswerText(userAnswerText);
   const correctAnswerText = getPracticeAnswer(currentPracticeWord);
-  const correctAnswer = correctAnswerText.trim().toLowerCase();
+  const correctAnswer = normalizeAnswerText(correctAnswerText);
 
   if (userAnswer === "") {
     practiceResultEl.textContent = "Hay nhap cau tra loi truoc.";
@@ -445,7 +598,15 @@ checkAnswerBtn.addEventListener("click", function () {
     return;
   }
 
-  practiceAnswerInput.value = "";
+  const mistake = getAnswerMistake(userAnswerText, correctAnswerText);
+
+  if (mistake) {
+    practiceResultEl.textContent = `Sai o vi tri ${mistake.position}: ban nhap "${mistake.typedChar}", dung la "${mistake.expectedChar}". Dap an dung: ${correctAnswerText}`;
+  } else {
+    practiceResultEl.textContent = `Sai roi. Dap an dung: ${correctAnswerText}`;
+  }
+
+  practiceResultEl.className = "practice-result wrong";
   practiceAnswerInput.focus();
 });
 
@@ -458,6 +619,130 @@ practiceAnswerInput.addEventListener("keydown", function (event) {
 nextPracticeBtn.addEventListener("click", function () {
   clearTimeout(nextPracticeTimer);
   goToNextPracticeWord();
+});
+
+showRegisterBtn.addEventListener("click", function () {
+  setAuthMode("register");
+});
+
+showLoginBtn.addEventListener("click", function () {
+  setAuthMode("login");
+});
+
+toggleRegisterPasswordBtn.addEventListener("click", function () {
+  togglePasswordVisibility(registerPasswordInput, toggleRegisterPasswordBtn);
+});
+
+toggleLoginPasswordBtn.addEventListener("click", function () {
+  togglePasswordVisibility(loginPasswordInput, toggleLoginPasswordBtn);
+});
+
+registerForm.addEventListener("submit", async function (event) {
+  event.preventDefault();
+
+  const name = registerNameInput.value.trim();
+  const phone = registerPhoneInput.value.trim();
+  const password = registerPasswordInput.value;
+
+  if (name === "") {
+    showAuthMessage("Sai o ten: ban chua nhap ten.", "warning");
+    registerNameInput.focus();
+    return;
+  }
+
+  if (!/^(\+?\d{9,15})$/.test(phone.replace(/\s+/g, ""))) {
+    showAuthMessage("Sai o so dien thoai: chi nhap 9 den 15 chu so.", "warning");
+    registerPhoneInput.focus();
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthMessage("Sai o mat khau: mat khau can it nhat 6 ky tu.", "warning");
+    registerPasswordInput.focus();
+    return;
+  }
+
+  showAuthMessage("Creating account...", "");
+
+  try {
+    const data = await requestJson("/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: name,
+        phone: phone,
+        password: password
+      })
+    });
+
+    registerPasswordInput.value = "";
+    await finishAuth(data);
+  } catch (err) {
+    showAuthMessage(err.message, "warning");
+  }
+});
+
+loginForm.addEventListener("submit", async function (event) {
+  event.preventDefault();
+
+  const phone = loginPhoneInput.value.trim();
+  const password = loginPasswordInput.value;
+
+  if (!/^(\+?\d{9,15})$/.test(phone.replace(/\s+/g, ""))) {
+    showAuthMessage("Sai o so dien thoai: chi nhap 9 den 15 chu so.", "warning");
+    loginPhoneInput.focus();
+    return;
+  }
+
+  if (password === "") {
+    showAuthMessage("Sai o mat khau: ban chua nhap mat khau.", "warning");
+    loginPasswordInput.focus();
+    return;
+  }
+
+  showAuthMessage("Logging in...", "");
+
+  try {
+    const data = await requestJson("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        phone: phone,
+        password: password
+      })
+    });
+
+    loginPasswordInput.value = "";
+    await finishAuth(data);
+  } catch (err) {
+    showAuthMessage(err.message, "warning");
+  }
+});
+
+logoutBtn.addEventListener("click", async function () {
+  const token = getAuthToken();
+
+  clearAuthToken();
+  showAuthScreen();
+
+  if (!token) {
+    return;
+  }
+
+  try {
+    await requestJson("/api/auth/logout", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  } catch (err) {
+    showAuthMessage("", "");
+  }
 });
 
 deleteBtn.addEventListener("click", function () {
@@ -528,8 +813,4 @@ addBtn.addEventListener("click", function () {
   showAddMessage("New word added!", "success");
 });
 
-normalizeVocabularyExamples();
-renderTopics();
-updateDefaultSideButtons();
-updatePracticeModeButtons();
-showWord();
+checkExistingLogin();
